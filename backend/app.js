@@ -16,7 +16,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 const chess = new Chess();
 const players = {};  //object
-const currentPlayer = 'W';
+let currentPlayer = 'w';
 
 app.get("/", (req, res) => {
   res.render("index.ejs", {title: "Chess Game"});
@@ -38,7 +38,7 @@ io.on("connection", function (uniquesocket){
         uniquesocket.emit("playerRole", "w");
     }
     else if(!players.black){
-        players.white = uniquesocket.id;
+        players.black = uniquesocket.id;
         uniquesocket.emit("playerRole", "b");
     }
     else{
