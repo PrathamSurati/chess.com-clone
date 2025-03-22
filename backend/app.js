@@ -1,17 +1,66 @@
 const express = require("express");
 const http = require("http");
-const {chess} = require("chess.js");
+const { Chess } = require( 'chess.js' );
 const socket = require("socket.io");
+const path = require("path");
 
 const app = express();
 
-const serrver = http.createServer(app);
+const server = http.createServer(app);
 
 const io = socket(server);
 
 
+app.set("view engine", "ejs");
+app.use(express.static(path.join(__dirname, "public")));
+
+const chess = new Chess();
+const players = {};  //object
+const currentPlayer = 'W';
+
 app.get("/", (req, res) => {
-  res.send("hello world");
+  res.render("index.ejs", {title: "Chess Game"});
 });
 
-module.exports = app;
+io.on("connection", function (uniquesocket){
+    console.log("connected");
+
+    // uniquesocket.on("new-game",()=>{
+    //     // console.log("received new-game event");
+    //     io.emit("new-game begin");
+    // })
+
+
+    
+    
+    if(!players.white){
+        players.white = uniquesocket.id;
+        uniquesocket.emit("playerRole", "w");
+    }
+    else if(!players.black){
+        players.white = uniquesocket.id;
+        uniquesocket.emit("playerRole", "b");
+    }
+    else{
+        uniquesocket.emit("spectatorRole");
+    }
+
+
+
+    uniquesocket.on("disconnect",()=>{
+        // console.log("disconnected");
+        if(uniquesocket.id === players.white){
+            delete players.white;
+        }else if (uniquesocket.id === players.black){
+            delete players.black;
+        }
+    });
+});
+
+
+
+server.listen(3000, () => {
+    console.log("Server is running on port 3000");
+});
+
+// module.exports = app;
